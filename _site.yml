@@ -1,0 +1,12 @@
+name: "welcome"
+output_dir: "docs"
+navbar:
+  title: "Welcome"
+  left:
+  - text: "Home"
+   href: index.html
+  - text: "Hello"
+   href: welcome.html
+output:
+  html_document:
+ theme: cosmo
