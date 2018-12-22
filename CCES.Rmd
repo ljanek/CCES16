@@ -1,6 +1,13 @@
 ---
 title: "Exploring the 2016 CCES"
-output: html_document
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+output:
+  html_document:
+    code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +28,7 @@ cces <- read.dta("CCES16_Common_OUTPUT_Feb2018_VV.dta")
 
 ## Getting Started 
 
-To more easily examine the 2016 survey data, I selected a subset of variables of interest and renamed many of them for easier reference. (Not all selected variables are utilized in the analysis in this post). The variables I selected are key demographic and geographic characteristics of the respondents, as well as responses to questions on issues including health care, abortion, immigration, environmental policy, and others, and vote choice in the 2016 and 2012 (if applicable) elections.
+To more easily examine the 2016 survey data, I selected a subset of variables of interest and renamed many of them for easier reference. (Not all selected variables are utilized in the analysis in this post). The variables I selected are key demographic characteristics of the respondents, as well as responses to questions on issues including health care, abortion, immigration, environmental policy, and others, and vote choice in the 2016 and 2012 (if applicable) elections.
 
 ```{r message = FALSE, warning=FALSE}
 library(tidyverse)
@@ -31,16 +38,13 @@ cces2 <- cces %>%
          lookupzip, inputstate, countyfips, countyname, cdid115, birthyr, gender,
          educ, race, hispanic, pid3, ideo5, CC16_320a, CC16_326, CC16_410a, CC16_328, CC16_330a, 
          CC16_330d, CC16_331_1, CC16_331_3, CC16_331_7, CC16_332a,
-         CC16_332f, CC16_333a, CC16_333d, CC16_335, CC16_351I, CC16_351K, CC16_401, 
-         CC16_410b, CC16_412, CC16_422c, CC16_422d, CC16_422e, CC16_426_2) %>%
+         CC16_332f, CC16_333a, CC16_333d, CC16_335, CC16_351I, CC16_351K, CC16_401, CC16_426_2) %>%
   rename(state = inputstate, approveobama = CC16_320a, potus12vote = CC16_326,
          prim16vote = CC16_328, potus16vote = CC16_410a, gunbgcheck = CC16_330a, 
          cleanair = CC16_333d, banar = CC16_330d, statusworkers = CC16_331_1, 
          daca = CC16_331_3, deportimm = CC16_331_7, prochoice = CC16_332a, banabortion = CC16_332f,
          regco2 = CC16_333a, gaymarriage = CC16_335, repealaca = CC16_351I, 
-         raisewage = CC16_351K, didvote16 = CC16_401, senatorvote16 = CC16_410b, 
-         housevote16 = CC16_412, angryracism = CC16_422c, whiteadv = CC16_422d, 
-         fearrace = CC16_422e, spendhealth = CC16_426_2) %>%
+         raisewage = CC16_351K, didvote16 = CC16_401, spendhealth = CC16_426_2) %>%
   mutate(age = 2016 - birthyr)
 
 # Change one level to "NA"
@@ -49,9 +53,7 @@ cces2$potus16vote <- na_if(cces2$potus16vote, "I'm not sure")
 
 ## Looking at Voters According to their 2016 and 2012 Presidential Preference
 
-One of the interesting questions about the 2016 election is what motivated the group of voters who switched from voting for Barack Obama in 2012 to vote for Donald Trump in 2016. Here I look at this group of voters, as well as the (smaller) group of voters who chose Mitt Romney in 2016 andHillary Clinton in 2016, and as a baseline, the far more typical voters who chose either the Republican candidate or the Democratic candidate in both the 2012 and 2016 Presidential elections.
-
-The code below creates a new variable that indicates membership in one of these four groups, for respondents who indicated that they had voted for one of the two major party candidates in both Presidential elections.
+One of the interesting questions about the 2016 election is what motivated the group of voters who switched from voting for Barack Obama in 2012 to vote for Donald Trump in 2016. Here I look at this group of voters, as well as the (smaller) group of voters who chose Mitt Romney in 2016 and Hillary Clinton in 2016, and as a baseline, the far more typical voters who chose either the Republican candidate or the Democratic candidate in both the 2012 and 2016 Presidential elections.
 
 ```{r}
 attach(cces2)
@@ -66,7 +68,18 @@ cces2$potus1216[potus12vote == "Mitt Romney" &
 detach(cces2)
 ```
 
-Next I calculated support among each of the four groups of voters for various issue positions from the survey: job approval of President Obama, banning assault rifles, EPA regulation of CO2 emissions, allowing a woman to choose abortion in all circumstances, gay marriage, the Affordable Care Act / Obamacare (being *against* repeal), raising the federal minimum wage to $12/hr, having the respondent's *state* legislature increase spending on health care, and two immigration proposals: "Grant legal status to people who were brought to the US illegally as children, but who have graduated from a U.S. high school" (the DACA program), and "Grant legal status to all illegal immigrants who have held jobs and paid taxes for at least 3 years, and not been convicted of any felony crimes."
+Next I calculated support among each of the four groups of voters for various issue positions from the survey:
+
+* Job approval of President Obama
+* Raising the federal minimum wage to $12/hr
+* EPA regulation of CO2 emissions
+* Banning assault weapons
+* Allowing a woman to choose abortion in all circumstances
+* Gay marriage
+* The Affordable Care Act / Obamacare (being *against* repeal)
+* On immigration: "Grant legal status to all illegal immigrants who have held jobs and paid taxes for at least 3 years, and not been convicted of any felony crimes."
+* Increased healthcare spending in the respondent's *state* legislature
+*  Also on immigration: "Grant legal status to people who were brought to the US illegally as children, but who have graduated from a U.S. high school" (the DACA program)
 
 ```{r message=FALSE, warning=FALSE}
 # Create table of issue support on 10 items for 4 groups of voters
@@ -100,7 +113,7 @@ table1216.issues.tidy <- table1216.issues.tidy %>%
 ```
 
 
-The dot plot below illustrates support among each of the four groups of voters for the issues/proposals described above: 
+The dot plot below illustrates support among each of the four groups of voters for the issues/proposals described above. At top of the plot we see that, unsurprisingly, consistent Democratic (Obama-Clinton) voters had a very high approval of President Obama (94%), while consistent Republican voters had a very low approval of him (only 2%). What might be surprising is that voters who supported Romney in 2012 but Clinton in 2016 were actually more likely to approve of President Obama (51% approving), than the group of voters who actually voted for Obama in 2012, but then switched to voting for Trump in 2016 (36% approving).
 
 ```{r echo=FALSE, fig.width=9, fig.height=6}
 p4 <- ggplot(table1216.issues.tidy) +
@@ -124,10 +137,9 @@ p4 <- ggplot(table1216.issues.tidy) +
 print(p4)
 ```
 
-Looking at the plot above, at the top we see that, unsurprisingly, consistent Democratic (Obama-Clinton) voters had a very high approval of President Obama (94%), while consistent Republican voters had a very low approval of him (only 2%). What might be surprising is that voters who supported Romney in 2012 but Clinton in 2016 were actually more likely to approve of President Obama (51%), than the group of voters who actually voted for Obama in 2012, but then switched to voting for Trump in 2016 (36%).
 
-Going down the plot, we see that on every issue, the consistent Democratic voters (represented by the dark blue dot) have the highest support for each proposal, which again is not surprising since these are all questions about support for what is considered the liberal position, or part of the Democratic Party platform. And, of course, consistent Republican voters, represented by the dark red dot, had the lowest support for each position, although in many cases (36% supporting a ban on assault weapons?) perhaps higher than commonly assumed. 
+Going down the plot, we see that on every issue, the consistent Democratic voters have the highest support for each proposal, which again is not surprising since these are all questions about support for what is considered the liberal position. And of course, consistent Republican voters had the lowest support for each position, although in many cases (36% supporting a ban on assault weapons?) perhaps higher than commonly assumed. 
 
-On *most* questions, the Romeny-Clinton voters were more likely to hold the liberal position than Obama-Trump voters, the same pattern seen with approval of Obama. On the two immigration questions -- the DACA program and an amnesty for some undocumented workers -- Obama-Trump voters were especially unsupportive, with only 34% and 46% supporting each of the respective proposals. This is probably not unexpected considering an opposition to immigration was one of the strongest theme's of Trump's campaign, and was not especially prominent in Romney's campaign. 
+On *most* questions, the Romney-Clinton voters were more likely to hold the liberal position than Obama-Trump voters. On the two immigration questions -- the DACA program and an amnesty for some undocumented workers -- Obama-Trump voters were especially unsupportive, with only 34% and 46% supporting each of the respective proposals. This is probably not unexpected considering an opposition to immigration was one of the strongest theme's of Trump's campaign, and was not especially prominent in Romney's campaign. 
 
-There are two exceptions to the pattern of Romney-Clinton voters being more likely to hold the liberal position than Obama-Trump voters -- raising the minimum wage and an increase in *state legislature* spending on health care. This is interesting in that these are economic issues, a domain where Trump as a candidate did not emphasize his agreement with conservative orthodoxy the way that Romeny did. It is  interesting that Obama-Trump voters are much more likely to support an increase in healthcare spending in their state legislature (57%) than they are to support the Affordable Care Act (28%). This may be because "Obamacare" became such a polarizing issue, and one where perhaps the kind of voters who switched from voting Democrat to Republican between 2012 and 2016 would be inclined to support their (new) party line.
+There are two exceptions to the pattern of Romney-Clinton voters being more likely to hold the liberal position than Obama-Trump voters -- raising the minimum wage and an increase in *state legislature* spending on health care, notably two issues that are based more on economic rather than cultural values. Obama-Trump voters' support for increasing state legislature spending on healthcare (57%) is an interesting contrast to their lack of support for the Affordable Care Act (only 28%). This may be because "Obamacare" has become such a polarized issue, where perhaps the voters who switched from voting Democrat to Republican between 2012 and 2016 are inclined to support their (new) party line. In fact, views on this issue track very closely with approval of Obama himself, suggesting the former is almost a proxy for the latter. 
